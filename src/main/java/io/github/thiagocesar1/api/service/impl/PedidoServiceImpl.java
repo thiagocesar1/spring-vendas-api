@@ -20,6 +20,7 @@ import io.github.thiagocesar1.api.domain.repository.ProdutoRepository;
 import io.github.thiagocesar1.api.exception.RegraNegocioException;
 import io.github.thiagocesar1.api.rest.dto.ItemPedidoDTO;
 import io.github.thiagocesar1.api.rest.dto.PedidoDTO;
+import io.github.thiagocesar1.api.rest.erros.PedidoNaoEncontradoException;
 import io.github.thiagocesar1.api.service.PedidoService;
 import lombok.RequiredArgsConstructor;
 
@@ -76,5 +77,16 @@ public class PedidoServiceImpl implements PedidoService {
 	@Override
 	public Optional<Pedido> obterPedidoCompleto(Integer id) {
 		return pedidoRepository.findByIdFetchItens(id);
+	}
+
+	@Override
+	@Transactional
+	public void atualizaStatus(Integer id, StatusPedido statusPedido) {
+		pedidoRepository.findById(id)
+						.map(pedido -> {
+							pedido.setStatus(statusPedido);
+							return pedidoRepository.save(pedido);
+						}).orElseThrow(() -> new PedidoNaoEncontradoException());
+		
 	}	
 }
